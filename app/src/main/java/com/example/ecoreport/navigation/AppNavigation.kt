@@ -8,7 +8,6 @@ import com.example.ecoreport.repository.ReporteRepository
 import com.example.ecoreport.ui.screens.*
 import com.example.ecoreport.ui_comp.screens.PantallaInicio
 import com.example.ecoreport.viewmodel.ReporteViewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation(
@@ -18,39 +17,14 @@ fun AppNavigation(
     val navController =
         rememberNavController()
 
-    val viewModel: ReporteViewModel = viewModel()
-    val reportes =
-        remember {
-            mutableStateListOf<
-                    ReporteEntity
-                    >()
-        }
+    val viewModel: ReporteViewModel = viewModel(
+        factory = ReporteViewModel.Factory(repository)
+    )
 
     var reporteSeleccionado by remember {
         mutableStateOf<
                 ReporteEntity?
                 >(null)
-    }
-
-    val scope =
-        rememberCoroutineScope()
-
-    suspend fun cargarReportes() {
-
-        val datos =
-            repository.obtenerTodos()
-
-        reportes.clear()
-
-        reportes.addAll(
-            datos
-        )
-    }
-
-    LaunchedEffect(Unit) {
-
-        cargarReportes()
-
     }
 
     NavHost(
@@ -117,7 +91,11 @@ fun AppNavigation(
 
             PantallaReportes(
                 reportes =
-                    viewModel.reportes,
+                    viewModel.reportesConsulta,
+
+                onBuscar = { query ->
+                    viewModel.consultar(query)
+                },
 
                 seleccionarReporte = { reporte ->
 
@@ -130,6 +108,7 @@ fun AppNavigation(
                 },
 
                 volver = {
+                    viewModel.cargarReportes()
 
                     navController
                         .popBackStack()
@@ -170,7 +149,7 @@ fun AppNavigation(
 
             PantallaEstadisticas(
                 reportes =
-                    reportes,
+                    viewModel.reportes,
 
                 volver = {
 

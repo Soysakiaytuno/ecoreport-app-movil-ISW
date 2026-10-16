@@ -20,6 +20,10 @@ interface ReporteDao {
     suspend fun obtenerTodos():
             List<ReporteEntity>
 
+    @Query("SELECT * FROM reportes WHERE titulo LIKE '%' || :tituloConsulta || '%'")
+    suspend fun consultar(tituloConsulta: String):
+            List<ReporteEntity>
+
     @Update
     suspend fun actualizar(
         reporte: ReporteEntity

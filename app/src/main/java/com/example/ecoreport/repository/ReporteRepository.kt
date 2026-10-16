@@ -22,4 +22,9 @@ class ReporteRepository (
     suspend fun eliminar(reporte: ReporteEntity) {
         reporteDao.eliminar(reporte)
     }
+
+    suspend fun consultar(tituloConsulta: String):
+            List<ReporteEntity> {
+        return reporteDao.consultar(tituloConsulta)
+    }
 }

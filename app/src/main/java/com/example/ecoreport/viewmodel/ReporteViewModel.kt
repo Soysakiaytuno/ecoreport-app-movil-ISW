@@ -40,6 +40,21 @@ class ReporteViewModel(
                 initialValue = emptyList()
             )
 
+    // Sincroniza los datos remotos guardándolos en la base de datos local
+    fun sincronizar() {
+        viewModelScope.launch {
+            _cargando.value = true
+            _error.value = null
+            try {
+                repository.sincronizar()
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _cargando.value = false
+            }
+        }
+    }
+
     fun cargarReportesRemotos() {
         viewModelScope.launch {
             _cargando.value = true

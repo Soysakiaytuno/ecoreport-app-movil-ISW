@@ -12,7 +12,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.ecoreport.data.ReporteEntity
-import com.example.ecoreport.data.remote.toEntity
 import com.example.ecoreport.repository.ReporteRepository
 import com.example.ecoreport.ui_comp.screens.PantallaDetalle
 import com.example.ecoreport.ui_comp.screens.PantallaEstadisticas
@@ -34,13 +33,12 @@ fun AppNavigation(
 
     val viewModel: ReporteViewModel = viewModel(factory = factory)
 
-    // Cargamos los reportes remotos al iniciar la app
+    // Sincroniza los datos remotos en la base local al iniciar la app
     LaunchedEffect(Unit) {
-        viewModel.cargarReportesRemotos()
+        viewModel.sincronizar()
     }
 
     val reportes by viewModel.reportes.collectAsStateWithLifecycle()
-    val reportesRemotos by viewModel.reportesRemotos.collectAsStateWithLifecycle()
 
     var reporteSeleccionado by remember {
         mutableStateOf<ReporteEntity?>(null)
@@ -50,30 +48,13 @@ fun AppNavigation(
         .categoriaSeleccionada
         .collectAsStateWithLifecycle()
 
-    // Si hay datos remotos, los mostramos; si no, mostramos los locales
-    val reportesActuales = remember(reportesRemotos, reportes) {
-        if (reportesRemotos.isNotEmpty()) {
-            reportesRemotos.map { it.toEntity() }
-        } else {
-            reportes
-        }
-    }
-
-    val reportesFiltrados = remember(reportesActuales, categoriaSeleccionada, reportesRemotos) {
-        if (reportesRemotos.isNotEmpty() && categoriaSeleccionada != null) {
-            reportesActuales.filter { it.categoria.equals(categoriaSeleccionada, ignoreCase = true) }
-        } else {
-            reportesActuales
-        }
-    }
-
     NavHost(
         navController = navController,
         startDestination = "inicio"
     ) {
         composable("inicio") {
             PantallaInicio(
-                reportes = reportesActuales,
+                reportes = reportes,
                 irRegistro = {
                     navController.navigate("registro")
                 },
@@ -100,7 +81,7 @@ fun AppNavigation(
 
         composable("reportes") {
             PantallaReportes(
-                reportes = reportesFiltrados,
+                reportes = reportes,
                 categoriaSeleccionada = categoriaSeleccionada,
                 seleccionarCategoria = { categoria ->
                     viewModel.seleccionarCategoria(categoria)
@@ -135,7 +116,7 @@ fun AppNavigation(
 
         composable("estadisticas") {
             PantallaEstadisticas(
-                reportes = reportesActuales,
+                reportes = reportes,
                 volver = {
                     navController.popBackStack()
                 }

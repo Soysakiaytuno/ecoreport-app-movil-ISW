@@ -4,24 +4,22 @@ import com.example.ecoreport.data.ReporteDao
 import com.example.ecoreport.data.ReporteEntity
 import com.example.ecoreport.data.remote.ReporteApiService
 import com.example.ecoreport.data.remote.ReporteDto
+import com.example.ecoreport.data.remote.toEntity
 import kotlinx.coroutines.flow.Flow
 
-class ReporteRepository (
+class ReporteRepository(
     private val reporteDao: ReporteDao,
     private val api: ReporteApiService
 ) {
-    fun obtenerTodos():
-            Flow<List<ReporteEntity>> {
+    fun obtenerTodos(): Flow<List<ReporteEntity>> {
         return reporteDao.obtenerTodos()
     }
-    fun obtenerPorCategoria(
-        categoria: String?
-    ):
-            Flow<List<ReporteEntity>> {
+
+    fun obtenerPorCategoria(categoria: String?): Flow<List<ReporteEntity>> {
         return reporteDao.obtenerPorCategoria(categoria)
     }
 
-    suspend fun insertar(reporte: ReporteEntity){
+    suspend fun insertar(reporte: ReporteEntity) {
         reporteDao.insertar(reporte)
     }
 
@@ -33,9 +31,14 @@ class ReporteRepository (
         reporteDao.eliminar(reporte)
     }
 
-    //llamada a las funciones remotas
-    suspend fun obtenerReportesRemotos():
-            List<ReporteDto> {
+    // Llamada a las funciones remotas
+    suspend fun obtenerReportesRemotos(): List<ReporteDto> {
         return api.obtenerReportes()
+    }
+
+    // Sincronización: descarga de la API y guarda en Room
+    suspend fun sincronizar() {
+        val remotos = api.obtenerReportes()
+        reporteDao.insertarTodos(remotos.map { it.toEntity() })
     }
 }

@@ -1,6 +1,5 @@
 package com.example.ecoreport.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ecoreport.data.ReporteEntity
@@ -9,18 +8,19 @@ import com.example.ecoreport.repository.ReporteRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ReporteViewModel (
+class ReporteViewModel(
     private val repository: ReporteRepository
-): ViewModel() {
+) : ViewModel() {
 
     private val _categoriaSeleccionada = MutableStateFlow<String?>(null)
 
     private val _reportesRemotos = MutableStateFlow<List<ReporteDto>>(emptyList())
+    val reportesRemotos: StateFlow<List<ReporteDto>> = _reportesRemotos
+
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando
 
@@ -28,21 +28,31 @@ class ReporteViewModel (
     val error: StateFlow<String?> = _error
 
     val categoriaSeleccionada: StateFlow<String?> = _categoriaSeleccionada
-    val reportes:
-    StateFlow<List<ReporteEntity>> =
+
+    val reportes: StateFlow<List<ReporteEntity>> =
         _categoriaSeleccionada
-            .flatMapLatest {
-                categoria ->
+            .flatMapLatest { categoria ->
                 repository.obtenerPorCategoria(categoria)
             }
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted
-                    .WhileSubscribed(5000),
+                started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
 
-
+    fun cargarReportesRemotos() {
+        viewModelScope.launch {
+            _cargando.value = true
+            _error.value = null
+            try {
+                _reportesRemotos.value = repository.obtenerReportesRemotos()
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _cargando.value = false
+            }
+        }
+    }
 
     fun insertar(reporte: ReporteEntity) {
         viewModelScope.launch {

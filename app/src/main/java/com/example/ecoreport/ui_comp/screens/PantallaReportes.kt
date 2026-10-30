@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,6 +28,7 @@ import com.example.ecoreport.data.ReporteEntity
 @Composable
 fun PantallaReportes(
     reportes: List<ReporteEntity>,
+    cargando: Boolean = false,
     categoriaSeleccionada: String?,
     seleccionarCategoria: (String?) -> Unit,
     seleccionarReporte: (ReporteEntity) -> Unit,
@@ -57,148 +59,88 @@ fun PantallaReportes(
             modifier = Modifier.height(8.dp)
         )
 
-        Row (
-            horizontalArrangement =
-                Arrangement.spacedBy(4.dp)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
 
             FilterChip(
-                selected =
-                    categoriaSeleccionada == null,
-
-                onClick = {
-
-                    seleccionarCategoria(
-                        null
-                    )
-                },
-
-                label = {
-                    Text("TODOS")
-                }
+                selected = categoriaSeleccionada == null,
+                onClick = { seleccionarCategoria(null) },
+                label = { Text("TODOS") }
             )
 
             FilterChip(
-                selected =
-                    categoriaSeleccionada ==
-                            "alumbrado",
-
-                onClick = {
-
-                    seleccionarCategoria(
-                        "alumbrado"
-                    )
-                },
-
-                label = {
-                    Text("ALUMBRADO")
-                }
+                selected = categoriaSeleccionada == "alumbrado",
+                onClick = { seleccionarCategoria("alumbrado") },
+                label = { Text("ALUMBRADO") }
             )
 
             FilterChip(
-                selected =
-                    categoriaSeleccionada ==
-                            "AGUAS",
-
-                onClick = {
-
-                    seleccionarCategoria(
-                        "AGUAS"
-                    )
-                },
-
-                label = {
-                    Text("AGUAS")
-                }
+                selected = categoriaSeleccionada == "AGUAS",
+                onClick = { seleccionarCategoria("AGUAS") },
+                label = { Text("AGUAS") }
             )
 
             FilterChip(
-                selected =
-                    categoriaSeleccionada ==
-                            "SUELOS",
-
-                onClick = {
-
-                    seleccionarCategoria(
-                        "SUELOS"
-                    )
-                },
-
-                label = {
-                    Text("SUELOS")
-                }
+                selected = categoriaSeleccionada == "SUELOS",
+                onClick = { seleccionarCategoria("SUELOS") },
+                label = { Text("SUELOS") }
             )
         }
 
-        if (reportes.isEmpty()) {
+        Spacer(
+            modifier = Modifier.height(12.dp)
+        )
 
+        if (cargando) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (reportes.isEmpty()) {
             Text(
                 text = "No existen reportes registrados."
             )
-
         } else {
-
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-
                 items(
                     items = reportes,
-                    key = { reporte ->
-                        reporte.id
-                    }
+                    key = { reporte -> reporte.id }
                 ) { reporte ->
 
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                seleccionarReporte(reporte)
-                            },
-
+                            .clickable { seleccionarReporte(reporte) },
                         shape = RoundedCornerShape(16.dp),
-
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 4.dp
-                        )
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         ) {
-
                             Text(
                                 text = reporte.titulo,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
 
-                            Spacer(
-                                modifier = Modifier.height(6.dp)
-                            )
+                            Spacer(modifier = Modifier.height(6.dp))
 
-                            Text(
-                                text = "Categoría: ${reporte.categoria}"
-                            )
+                            Text(text = "Categoría: ${reporte.categoria}")
+                            Text(text = "Ubicación: ${reporte.ubicacion}")
+                            Text(text = "Estado: ${reporte.estado}")
+                            Text(text = "Fecha: ${reporte.fecha}")
 
-                            Text(
-                                text = "Ubicación: ${reporte.ubicacion}"
-                            )
-
-                            Text(
-                                text = "Estado: ${reporte.estado}"
-                            )
-
-                            Text(
-                                text = "Fecha: ${reporte.fecha}"
-                            )
-
-                            Spacer(
-                                modifier = Modifier.height(6.dp)
-                            )
+                            Spacer(modifier = Modifier.height(6.dp))
 
                             Text(
                                 text = "Presiona para ver el detalle",
@@ -218,10 +160,7 @@ fun PantallaReportes(
             onClick = volver,
             modifier = Modifier.fillMaxWidth()
         ) {
-
-            Text(
-                text = "VOLVER"
-            )
+            Text(text = "VOLVER")
         }
     }
 }

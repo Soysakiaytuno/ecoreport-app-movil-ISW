@@ -39,6 +39,8 @@ fun AppNavigation(
     }
 
     val reportes by viewModel.reportes.collectAsStateWithLifecycle()
+    val cargando by viewModel.cargando.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
 
     var reporteSeleccionado by remember {
         mutableStateOf<ReporteEntity?>(null)
@@ -55,6 +57,11 @@ fun AppNavigation(
         composable("inicio") {
             PantallaInicio(
                 reportes = reportes,
+                cargando = cargando,
+                error = error,
+                onSincronizar = {
+                    viewModel.sincronizar()
+                },
                 irRegistro = {
                     navController.navigate("registro")
                 },
@@ -82,6 +89,7 @@ fun AppNavigation(
         composable("reportes") {
             PantallaReportes(
                 reportes = reportes,
+                cargando = cargando,
                 categoriaSeleccionada = categoriaSeleccionada,
                 seleccionarCategoria = { categoria ->
                     viewModel.seleccionarCategoria(categoria)
